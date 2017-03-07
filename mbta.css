@@ -1,0 +1,48 @@
+p {
+	margin-left: 20%;
+	margin-right: 20%;
+}
+
+#title {
+	font-size: 55px;
+	font-family: "Helvetica";
+	text-align: center;
+}
+
+#map {
+	height: 400px;
+	width: 600px;
+	margin: 0 auto;
+}
+
+#time-table {
+	width: 500px;
+	margin: 0 auto;
+
+	font-size: 30px;
+	font-family: "Helvetica";
+}
+
+#stop-info-south {
+	float: left;
+	position: relative;
+}
+
+#stop-info-north {
+	float: right;
+	position: relative;
+}
+
+
+/* Width too small to display north and south next to each other */
+@media all and (max-width: 200px) { 
+	#stop-info-north {
+		float: none;
+		right: 0px;
+	}
+
+	#stop-info-south {
+		float: none;
+		left: 0px;
+	}
+}

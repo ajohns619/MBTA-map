@@ -1,5 +1,9 @@
-#google_maps_pin
+# MBTA-Map
 
-Generic Google Maps Display to be used on projects
+##trains.html
+Shows all trains currently on the redline in realtime by calling on the MBTA's API service.
 
-Displays a pin on a google map at the user's location.# MBTA-map
+##stops.html
+Shows all stops.
+
+Both display a pin on a google map at the user's location.

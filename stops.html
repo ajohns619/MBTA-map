@@ -3,10 +3,11 @@
 
 <head>
     <title>Boston Red Line</title>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="mbta.css"/>
+
     <meta charset="utf-8" />
 
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=[YOUR_API_KEY]&libraries=geometry"> </script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDbnKWhNaXjq-ChDKgDnt5P2jaa8YGP_TM&libraries=geometry"> </script>
 
     <script>
     var map;
@@ -64,11 +65,11 @@
         marker.setMap(map);
 
         google.maps.event.addListener(marker, 'click', function() {
-            var content = this.title;
-            infowindow.setContent(content);
+            infowindow.setContent(this.title);
             infowindow.open(map, this);
-            //document.getElementById("stop-info").innerHTML = g
-            getStopInfo(content);
+            if(name != 'User'){
+                getStopInfo(this.title);
+            }
 
         });
     }
@@ -103,21 +104,45 @@
         request.send();
     }
 
-    function getStopInfo(){
+    function getStopInfo(stop_string){
 
         var stoprequest = new XMLHttpRequest();
-        var req_string = "http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop=place-alfcl&format=json";
-        stoprequest.open("GET", "http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop=place-alfcl&format=json", true);
+        var req_string = ('http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop='
+            + stop_string + '&format=json');
+        
+        stoprequest.open("GET", req_string, true);
         
         stoprequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        console.log("here");
 
         stoprequest.onreadystatechange = function(){
-            console.log(stoprequest.status);
             if (stoprequest.readyState == 4 && stoprequest.status == 200){
-                document.getElementById("stop-info").innerHTML = stoprequest.responseText;
+                var responseObject = JSON.parse(stoprequest.responseText);
+                var list = responseObject.mode[0].route[0];
+                
+                var trip;
+
+                for (var i = 0; i < 2; i ++){
+                    var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
+                    for (var j = 0; j < list.direction[i].trip.length; j++){
+                        trip = list.direction[i].trip[j];
+                        utcSeconds = trip.sch_dep_dt;
+                        var dep_time = new Date(0);
+                        dep_time.setUTCSeconds(utcSeconds);
+
+
+                        text += '<li>' + ('0' + dep_time.getHours()).slice(-2) + ':'
+                            + ('0' + (dep_time.getMinutes())).slice(-2) + '</li>';
+                    }
+                    text += '</ul>'
+                    if (list.direction[i].direction_id == 0){
+                        document.getElementById("stop-info-south").innerHTML = text;
+                    } else {
+                        document.getElementById("stop-info-north").innerHTML = text;
+                    }
+                }
+                
             } else if (stoprequest.readyState != 4){
-                document.getElementById("stop-info").innerHTML = "loading..."
+                document.getElementById("stop-info-south").innerHTML = "loading..."
             }
         };
         stoprequest.send();
@@ -132,8 +157,10 @@
 
 <div id="map"></div>
 
-<div id="stop-info"></div>
-
+<div id="time-table">
+    <div id="stop-info-south"></div>
+    <div id="stop-info-north"></div>
+</div>
 
 </body>
 </html>
