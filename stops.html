@@ -3,11 +3,11 @@
 
 <head>
     <title>Boston Red Line</title>
-    <link rel="stylesheet" href="mbta.css"/>
+    <link rel="stylesheet" href="style.css"/>
 
     <meta charset="utf-8" />
 
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDbnKWhNaXjq-ChDKgDnt5P2jaa8YGP_TM&libraries=geometry"> </script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=[YOUR_API_KEY]&libraries=geometry"> </script>
 
     <script>
     var map;
@@ -65,8 +65,8 @@
         marker.setMap(map);
 
         google.maps.event.addListener(marker, 'click', function() {
-            infowindow.setContent(this.title);
-            infowindow.open(map, this);
+            //infowindow.setContent(this.title);
+            //infowindow.open(map, this);
             if(name != 'User'){
                 getStopInfo(this.title);
             }
@@ -93,8 +93,6 @@
                         stop = list.direction[i].stop[j];
                         
                         var label = stop.parent_station;
-                        //var label = get_stop_info(stop.parent_station);
-
                         addToMap(stop.stop_lat, stop.stop_lon, label);
                     }
                 }
@@ -118,13 +116,11 @@
             if (stoprequest.readyState == 4 && stoprequest.status == 200){
                 var responseObject = JSON.parse(stoprequest.responseText);
                 var list = responseObject.mode[0].route[0];
-                
-                var trip;
 
                 for (var i = 0; i < 2; i ++){
                     var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
                     for (var j = 0; j < list.direction[i].trip.length; j++){
-                        trip = list.direction[i].trip[j];
+                        var trip = list.direction[i].trip[j];
                         utcSeconds = trip.sch_dep_dt;
                         var dep_time = new Date(0);
                         dep_time.setUTCSeconds(utcSeconds);
@@ -134,6 +130,7 @@
                             + ('0' + (dep_time.getMinutes())).slice(-2) + '</li>';
                     }
                     text += '</ul>'
+                    document.getElementById("stop-name").innerHTML =responseObject.stop_name;
                     if (list.direction[i].direction_id == 0){
                         document.getElementById("stop-info-south").innerHTML = text;
                     } else {
@@ -158,6 +155,7 @@
 <div id="map"></div>
 
 <div id="time-table">
+    <p id="stop-name"></p>
     <div id="stop-info-south"></div>
     <div id="stop-info-north"></div>
 </div>

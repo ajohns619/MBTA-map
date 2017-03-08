@@ -1,8 +1,3 @@
-p {
-	margin-left: 20%;
-	margin-right: 20%;
-}
-
 #title {
 	font-size: 55px;
 	font-family: "Helvetica";
@@ -10,9 +5,9 @@ p {
 }
 
 #map {
-	height: 400px;
-	width: 600px;
 	margin: 0 auto;
+	width: 800px;
+	height: 600px;
 }
 
 #time-table {
@@ -21,6 +16,10 @@ p {
 
 	font-size: 30px;
 	font-family: "Helvetica";
+}
+
+#stop-name {
+	text-align: center;
 }
 
 #stop-info-south {
