@@ -111,7 +111,6 @@
             if (stoprequest.readyState == 4 && stoprequest.status == 200){
                 var responseObject = JSON.parse(stoprequest.responseText);
 
-                console.log(stoprequest.responseText);
                 for (i in responseObject.mode){
                     if (responseObject.mode[i].mode_name == "Subway"){
                         for (j in responseObject.mode[i].route){
