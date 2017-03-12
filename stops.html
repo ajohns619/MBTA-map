@@ -7,7 +7,7 @@
 
     <meta charset="utf-8" />
 
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=[YOUR_API_KEY]&libraries=geometry"> </script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDbnKWhNaXjq-ChDKgDnt5P2jaa8YGP_TM&libraries=geometry"> </script>
 
     <script>
     var map;
@@ -24,24 +24,23 @@
 
     function myMap() {
         map = new google.maps.Map(document.getElementById("map"), mapProp);
-        getLocation();
-        loadTrains()
+        getUserLocation();
+        loadTrains();
     }
 
-    function getLocation() {
+    function getUserLocation() {
         if (navigator.geolocation) {
-            //navigator.geolocation.getCurrentPosition(print);
             navigator.geolocation.getCurrentPosition(function(position) {
                 myLat = position.coords.latitude;
                 myLng = position.coords.longitude;
-                renderMap();
+                addUserToMap();
             })
         } else { 
             document.getElementById("location").innerHTML = "Geolocation is not supported by this browser.";
         }
     }
 
-    function renderMap() {
+    function addUserToMap() {
         me = new google.maps.LatLng(myLat, myLng);
 
         map.panTo(me);
@@ -84,7 +83,6 @@
             if (request.readyState == 4 && request.status == 200){
                 var response = request.responseText;
                 var responseObject = JSON.parse(response);
-
                 var list = responseObject;
                 var stop;
 
@@ -98,7 +96,6 @@
                 }
             }
         };
-        
         request.send();
     }
 
@@ -109,40 +106,76 @@
             + stop_string + '&format=json');
         
         stoprequest.open("GET", req_string, true);
-        
         stoprequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
         stoprequest.onreadystatechange = function(){
             if (stoprequest.readyState == 4 && stoprequest.status == 200){
                 var responseObject = JSON.parse(stoprequest.responseText);
-                var list = responseObject.mode[0].route[0];
 
-                for (var i = 0; i < 2; i ++){
-                    var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
-                    for (var j = 0; j < list.direction[i].trip.length; j++){
-                        var trip = list.direction[i].trip[j];
-                        utcSeconds = trip.sch_dep_dt;
-                        var dep_time = new Date(0);
-                        dep_time.setUTCSeconds(utcSeconds);
-
-
-                        text += '<li>' + ('0' + dep_time.getHours()).slice(-2) + ':'
-                            + ('0' + (dep_time.getMinutes())).slice(-2) + '</li>';
-                    }
-                    text += '</ul>'
-                    document.getElementById("stop-name").innerHTML =responseObject.stop_name;
-                    if (list.direction[i].direction_id == 0){
-                        document.getElementById("stop-info-south").innerHTML = text;
-                    } else {
-                        document.getElementById("stop-info-north").innerHTML = text;
+                console.log(stoprequest.responseText);
+                for (i in responseObject.mode){
+                    if (responseObject.mode[i].mode_name == "Subway"){
+                        for (j in responseObject.mode[i].route){
+                            if (responseObject.mode[i].route[j].route_id == 'Red'){
+                                postRouteText(responseObject.mode[i].route[j]);
+                            }
+                        }
                     }
                 }
-                
-            } else if (stoprequest.readyState != 4){
-                document.getElementById("stop-info-south").innerHTML = "loading..."
+                postAlerts(responseObject, responseObject.stop_name);
+            } else {
+                document.getElementById("stop-info-south").innerHTML = 
+                document.getElementById("stop-info-north").innerHTML = "<p>No Trains Available</p>";
+                document.getElementById("stop-name").innerHTML = "Station";
             }
         };
         stoprequest.send();
+    }
+
+    function postAlerts(responseObject, stop_name){
+        document.getElementById("stop-name").innerHTML = stop_name;
+        if (responseObject.alert_headers.length != 0){
+            document.getElementById("alerts").innerHTML = '<p class="center">ALERTS</p>';
+        }
+        for (i in responseObject.alert_headers) {
+            document.getElementById("alerts").innerHTML += '<p>' + 
+                responseObject.alert_headers[i].header_text + '</p>';
+        }
+    
+    }
+
+    function postRouteText(list, stop_name){
+        for (var i = 0; i < list.direction.length; i ++){
+            var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
+
+            for (var j = 0; j < list.direction[i].trip.length; j++){
+                var trip = list.direction[i].trip[j];
+               
+                var dep_time = getDateTime(trip);
+                text += '<li>' + ('0' + dep_time.getHours()).slice(-2) + ':'
+                      + ('0' + (dep_time.getMinutes())).slice(-2) + '</li>';
+            }
+            text += '</ul>'
+            
+            if (list.direction[i].direction_id == 0){
+                document.getElementById("stop-info-south").innerHTML = text;
+            } else {
+                document.getElementById("stop-info-north").innerHTML = text;
+            }
+        }
+    }
+
+    function getDateTime(trip){
+        var dt;
+        if (typeof trip.sch_dep_dt != 'undefined'){
+            dt = trip.sch_dep_dt;
+        } else if (typeof trip.pre_dt != 'undefined'){
+            dt = trip.pre_dt;
+        } else {
+            dt = 0;
+        }
+        var time = new Date(0);
+        time.setUTCSeconds(dt);
+        return time;
     }
 
     </script>
@@ -158,6 +191,8 @@
     <p id="stop-name"></p>
     <div id="stop-info-south"></div>
     <div id="stop-info-north"></div>
+    <div id="alerts"></div>
+    <div class="space"></div>
 </div>
 
 </body>
