@@ -8,6 +8,5 @@ Shows all trains currently on the redline in realtime by calling on the MBTA's A
 ##stops.html
 Shows all stops on the Boston MBTA red line on a Google map and displays the stop name as well as the next departure times underneath the map. The code pulls the stop locations as well as the respective stop's departure trains from the MBTA API. Any Alerts associated with the station are displayed directly under the departure times.
 
-###Screenshots
 ![Map screenshot](screenshots/map.png)
 ![Display screenshot](screenshots/display.png)
