@@ -5,18 +5,17 @@ var mapProp = {
 };
 var myLat = 0;
 var myLng = 0;
-var me;
 var dotIcon = "dot.png";
 var infowindow = new google.maps.InfoWindow();
 
 
 function myMap() {
     map = new google.maps.Map(document.getElementById("map"), mapProp);
-    getUserLocation();
+    loadUserLocation();
     loadTrains();
 }
 
-function getUserLocation() {
+function loadUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             myLat = position.coords.latitude;
@@ -29,138 +28,134 @@ function getUserLocation() {
 }
 
 function addUserToMap() {
-    me = new google.maps.LatLng(myLat, myLng);
+    //me = new google.maps.LatLng(myLat, myLng);
+    //map.panTo(me);    // pans map to user location
+    addToMap(myLat, myLng, "User");
+}
 
-        //map.panTo(me);
-        addToMap(myLat, myLng, "User");
-    }
-
-    function addToMap(lat, lng, name) {
-        if (name == "User"){
-            marker = new google.maps.Marker({
-                position: new google.maps.LatLng(lat, lng),
-                title: name,
-                icon: dotIcon
-            });
-        } else {
-            marker = new google.maps.Marker({
-                position: new google.maps.LatLng(lat, lng),
-                title: name,
-            });
-            
-        }
-        marker.setMap(map);
-
-        google.maps.event.addListener(marker, 'click', function() {
-            //infowindow.setContent(this.title);
-            //infowindow.open(map, this);
-            if(name != 'User'){
-                getStopInfo(this.title);
-            }
-
+function addToMap(lat, lng, name) {
+    if (name == "User"){
+        marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),
+            title: name,
+            icon: dotIcon
         });
+    } else {
+        marker = new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),
+            title: name,
+        });
+
     }
+    marker.setMap(map);
 
-    function loadTrains(){
-        request = new XMLHttpRequest();
-        request.open("GET", "http://realtime.mbta.com/developer/api/v2/stopsbyroute?api_key=wX9NwuHnZU2ToO7GmGR9uw&route=Red&format=json", true);
+    google.maps.event.addListener(marker, 'click', function() {
+        //infowindow.setContent(this.title);
+        //infowindow.open(map, this);
+        if(name != 'User'){
+            getStopInfo(this.title);
+        }
+    });
+}
 
-        request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+function loadTrains(){
+    request = new XMLHttpRequest();
+    request.open("GET", "http://realtime.mbta.com/developer/api/v2/stopsbyroute?api_key=wX9NwuHnZU2ToO7GmGR9uw&route=Red&format=json", true);
 
-        request.onreadystatechange = function() {
-            if (request.readyState == 4 && request.status == 200){
-                var response = request.responseText;
-                var responseObject = JSON.parse(response);
-                var list = responseObject;
-                var stop;
+    request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-                for (var i = 0; i < list.direction.length; i++){
-                    for (var j = 0; j < list.direction[i].stop.length; j++){
-                        stop = list.direction[i].stop[j];
-                        
-                        var label = stop.parent_station;
-                        addToMap(stop.stop_lat, stop.stop_lon, label);
+    request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200){
+            var list = JSON.parse(request.responseText);
+            var stop;
+
+            for (var i = 0; i < list.direction.length; i++){
+                for (var j = 0; j < list.direction[i].stop.length; j++){
+                    stop = list.direction[i].stop[j];
+
+                    var label = stop.parent_station;
+                    addToMap(stop.stop_lat, stop.stop_lon, label);
+                }
+            }
+        }
+    };
+    request.send();
+}
+
+function getStopInfo(stop_string){
+
+    var stoprequest = new XMLHttpRequest();
+    var req_string = ('http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop='
+        + stop_string + '&format=json');
+
+    stoprequest.open("GET", req_string, true);
+    stoprequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    stoprequest.onreadystatechange = displayStopInfo;
+    stoprequest.send();
+}
+
+function displayStopInfo(){
+    if (this.readyState == 4 && this.status == 200){
+        var responseObject = JSON.parse(this.responseText);
+
+        for (i in responseObject.mode){
+            if (responseObject.mode[i].mode_name == "Subway"){
+                for (j in responseObject.mode[i].route){
+                    if (responseObject.mode[i].route[j].route_id == 'Red'){
+                        postRouteText(responseObject.mode[i].route[j]);
                     }
                 }
             }
-        };
-        request.send();
-    }
-
-    function getStopInfo(stop_string){
-
-        var stoprequest = new XMLHttpRequest();
-        var req_string = ('http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop='
-            + stop_string + '&format=json');
-        
-        stoprequest.open("GET", req_string, true);
-        stoprequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        stoprequest.onreadystatechange = function(){
-            if (stoprequest.readyState == 4 && stoprequest.status == 200){
-                var responseObject = JSON.parse(stoprequest.responseText);
-
-                for (i in responseObject.mode){
-                    if (responseObject.mode[i].mode_name == "Subway"){
-                        for (j in responseObject.mode[i].route){
-                            if (responseObject.mode[i].route[j].route_id == 'Red'){
-                                postRouteText(responseObject.mode[i].route[j]);
-                            }
-                        }
-                    }
-                }
-                postAlerts(responseObject, responseObject.stop_name);
-            } else {
-                document.getElementById("stop-info-south").innerHTML = 
-                document.getElementById("stop-info-north").innerHTML = "<p>No Trains Available</p>";
-                document.getElementById("stop-name").innerHTML = "Station";
-            }
-        };
-        stoprequest.send();
-    }
-
-    function postAlerts(responseObject, stop_name){
-        document.getElementById("stop-name").innerHTML = stop_name;
-        if (responseObject.alert_headers.length != 0){
-            document.getElementById("alerts").innerHTML = '<p class="center">ALERTS</p>';
         }
-        for (i in responseObject.alert_headers) {
-            document.getElementById("alerts").innerHTML += '<p>' + 
-            responseObject.alert_headers[i].header_text + '</p>';
-        }
-        
+        postAlerts(responseObject, responseObject.stop_name);
+    } else {
+        document.getElementById("stop-info-south").innerHTML = 
+        document.getElementById("stop-info-north").innerHTML = "<p>No Trains Available</p>";
+        document.getElementById("stop-name").innerHTML = "Station";
+    }
+}
+
+function postAlerts(responseObject, stop_name){
+    document.getElementById("stop-name").innerHTML = stop_name;
+    if (responseObject.alert_headers.length != 0){
+        document.getElementById("alerts").innerHTML = '<p class="center">ALERTS</p>';
+    }
+    for (i in responseObject.alert_headers) {
+        document.getElementById("alerts").innerHTML += '<p>' + 
+        responseObject.alert_headers[i].header_text + '</p>';
     }
 
-    function postRouteText(list, stop_name){
-        for (var i = 0; i < list.direction.length; i ++){
-            var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
+}
 
-            for (var j = 0; j < list.direction[i].trip.length; j++){
-                var trip = list.direction[i].trip[j];
-                
-                var dep_time = getDateTime(trip);
-                text += '<li>' + ('0' + dep_time.getHours()).slice(-2) + ':'
-                + ('0' + (dep_time.getMinutes())).slice(-2) + '</li>';
-            }
-            text += '</ul>'
-            
-            if (list.direction[i].direction_id == 0){
-                document.getElementById("stop-info-south").innerHTML = text;
-            } else {
-                document.getElementById("stop-info-north").innerHTML = text;
-            }
+function postRouteText(list, stop_name){
+    for (var i = 0; i < list.direction.length; i ++){
+        var text = '<p>' + list.direction[i].direction_name + '</p> <ul>';
+
+        for (var j = 0; j < list.direction[i].trip.length; j++){
+            var trip = list.direction[i].trip[j];
+            text += '<li>' + ('0' + getDateTime(trip).getHours()).slice(-2) + ':'
+            + ('0' + (getDateTime(trip).getMinutes())).slice(-2) + '</li>';
         }
-    }
+        text += '</ul>'
 
-    function getDateTime(trip){
-        var dt;
-        if (typeof trip.sch_dep_dt != 'undefined'){
-            dt = trip.sch_dep_dt;
-        } else if (typeof trip.pre_dt != 'undefined'){
-            dt = trip.pre_dt;
+        if (list.direction[i].direction_id == 0){
+            document.getElementById("stop-info-south").innerHTML = text;
         } else {
-            dt = 0;
+            document.getElementById("stop-info-north").innerHTML = text;
         }
-        var time = new Date(0);
-        time.setUTCSeconds(dt);
-        return time;
     }
+}
+
+function getDateTime(trip){
+    var dt;
+    if (typeof trip.sch_dep_dt != 'undefined'){
+        dt = trip.sch_dep_dt;
+    } else if (typeof trip.pre_dt != 'undefined'){
+        dt = trip.pre_dt;
+    } else {
+        dt = 0;
+    }
+    var time = new Date(0);
+    time.setUTCSeconds(dt);
+    return time;
+}
