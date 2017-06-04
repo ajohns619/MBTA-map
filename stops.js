@@ -5,7 +5,7 @@ var mapProp = {
 };
 var myLat = 0;
 var myLng = 0;
-var dotIcon = "dot.png";
+var dotIcon = "docs/dot.png";
 var infowindow = new google.maps.InfoWindow();
 
 
