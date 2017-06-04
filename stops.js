@@ -5,7 +5,7 @@ var mapProp = {
 };
 var myLat = 0;
 var myLng = 0;
-var dotIcon = "docs/dot.png";
+var dotIcon = "./docs/dot.png";
 var infowindow = new google.maps.InfoWindow();
 
 
@@ -60,7 +60,7 @@ function addToMap(lat, lng, name) {
 
 function loadTrains(){
     request = new XMLHttpRequest();
-    request.open("GET", "http://realtime.mbta.com/developer/api/v2/stopsbyroute?api_key=wX9NwuHnZU2ToO7GmGR9uw&route=Red&format=json", true);
+    request.open("GET", "https://realtime.mbta.com/developer/api/v2/stopsbyroute?api_key=wX9NwuHnZU2ToO7GmGR9uw&route=Red&format=json", true);
 
     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 

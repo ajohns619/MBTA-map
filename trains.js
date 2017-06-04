@@ -52,7 +52,7 @@ function getLocation() {
 
     function loadTrains(){
         request = new XMLHttpRequest();
-        request.open("GET", "http://realtime.mbta.com/developer/api/v2/vehiclesbyroutes?api_key=wX9NwuHnZU2ToO7GmGR9uw&routes=Red&format=json", true);
+        request.open("GET", "https://realtime.mbta.com/developer/api/v2/vehiclesbyroutes?api_key=wX9NwuHnZU2ToO7GmGR9uw&routes=Red&format=json", true);
 
         request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
