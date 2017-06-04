@@ -46,7 +46,6 @@ function getLocation() {
             var content = this.title;
             infowindow.setContent(content);
             infowindow.open(map, this);
-
         });
     }
 

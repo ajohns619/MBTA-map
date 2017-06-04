@@ -85,7 +85,7 @@ function loadTrains(){
 function getStopInfo(stop_string){
 
     var stoprequest = new XMLHttpRequest();
-    var req_string = ('http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop='
+    var req_string = ('https://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=wX9NwuHnZU2ToO7GmGR9uw&stop='
         + stop_string + '&format=json');
 
     stoprequest.open("GET", req_string, true);
